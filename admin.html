@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product and Order Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to right, #FFDEE9, #B5FFFC);
+        }
+
+        .nav-bar {
+            background: #8B5E3B;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            font-size: 1.5rem;
+        }
+
+        .btn-custom {
+            padding: 12px 20px;
+            background-color: #db3a4f;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .btn-custom:hover {
+            background-color: #E76F51;
+        }
+
+        .form-control,
+        .form-select {
+            padding: 18px;
+            border-radius: 10px;
+        }
+
+        .tab-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background-color: #db3a4f;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            margin: 0 5px;
+            cursor: pointer;
+        }
+
+        .tab-btn.active {
+            background-color: #E76F51;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .fruit-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .fruit-card img {
+            width: 120px;
+            height: 120px;
+            border-radius: 10px;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .status-packed {
+            background-color: #FFD700;
+            color: black;
+        }
+
+        .status-shipped {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .status-delivered {
+            background-color: #28a745;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="nav-bar">Product and Order Management</div>
+
+    <div class="tab-container">
+        <button class="tab-btn active" onclick="switchTab('products')">Manage Products</button>
+        <button class="tab-btn" onclick="switchTab('orders')">Order Management</button>
+    </div>
+
+    <div id="products" class="tab-content active container mt-4">
+        <h2 class="text-center">Add New Product</h2>
+        <form id="productForm" class="row g-4">
+            <div class="col-md-6">
+                <input type="text" id="productName" class="form-control" placeholder="Product Name"
+                    oninput="autoFillProduct()" required>
+            </div>
+            <div class="col-md-3">
+                <input type="number" id="productPrice" class="form-control" placeholder="Price" required>
+            </div>
+            <div class="col-md-3">
+                <select id="priceUnit" class="form-select">
+                    <option value="per kg">Per Kg</option>
+                    <option value="per piece">Per Piece</option>
+                    <option value="per dozen">Per Dozen</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <input type="number" id="productStock" class="form-control" placeholder="Stock Quantity" required>
+            </div>
+            <div class="col-md-6">
+                <input type="text" id="productImage" class="form-control" placeholder="Image URL (Optional)">
+            </div>
+            <div class="col-md-12">
+                <textarea id="productDescription" class="form-control" rows="3" placeholder="Description"
+                    required></textarea>
+            </div>
+            <div class="col-12 text-center">
+                <button type="submit" class="btn btn-custom">Add Product</button>
+            </div>
+        </form>
+
+        <h2 class="mt-5 text-center">Available Products</h2>
+        <div class="row" id="productList"></div>
+    </div>
+
+    <div id="orders" class="tab-content container mt-4">
+        <h2 class="text-center">Placed Orders (Admin View)</h2>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped mt-4">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Customer Name</th>
+                        <th>Product Name</th>
+                        <th>Quantity</th>
+                        <th>Total Price</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="orderList"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Order Modal (Place Order Popup) -->
+    <div class="modal fade" id="orderModal" tabindex="-1" aria-labelledby="orderModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content p-3">
+          <div class="modal-header">
+            <h5 class="modal-title" id="orderModalLabel">Place Order</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="orderForm">
+              <div class="mb-3">
+                <label for="customerName" class="form-label">Customer Name</label>
+                <input type="text" class="form-control" id="customerName" required>
+              </div>
+              <div class="mb-3">
+                <label for="orderQuantity" class="form-label">Quantity</label>
+                <input type="number" class="form-control" id="orderQuantity" required>
+              </div>
+              <input type="hidden" id="selectedProductIndex">
+              <button type="submit" class="btn btn-custom">Place Order</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const fruitData = {
+            "apple": { price: 180, unit: "per kg", image: "https://static.wikia.nocookie.net/fruits-information/images/2/2b/Apple.jpg" },
+            "banana": { price: 50, unit: "per dozen", image: "https://upload.wikimedia.org/wikipedia/commons/9/9b/Cavendish_Banana_DS.jpg" },
+            "orange": { price: 120, unit: "per kg", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7DKgxlyCzYOP6grBXISFNNcc5D40YcORPpg&s" },
+            "mango": { price: 220, unit: "per kg", image: "https://5.imimg.com/data5/TU/TO/MY-14521890/fresh-mango-250x250.jpg" },
+            "grapes": { price: 100, unit: "per kg", image: "https://5.imimg.com/data5/XN/BA/MY-44512510/fresh-grape-500x500.jpg" },
+            "pineapple": { price: 90, unit: "per kg", image: "https://5.imimg.com/data5/SELLER/Default/2022/11/JU/WQ/DZ/162935399/pineapple.jpg" },
+            "strawberry":{price: 300, unit: "per kg", image:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRstkjwiPxbadqVjuPJuj3ntjrD0h1LjB59Mw&s"},
+            "watermelon":{ price: 40, unit: "per kg", image: "https://static.wikia.nocookie.net/fruits-information/images/b/b9/Watermelon.jpg"},
+            "pomegranate":{price: 150, unit: "per kg", image:"https://st.depositphotos.com/11537288/53603/i/450/depositphotos_536039398-stock-photo-pomegranate-fruit-isolated-white-background.jpg"},
+            "papaya":{price: 50, unit: "per kg", image: "https://5.imimg.com/data5/ZQ/GV/CJ/SELLER-106350662/papaya-fruit.jpg"},
+            "dragonfruit":{price: 60, unit: "per piece",image: "https://www.shutterstock.com/image-photo/one-whole-dragon-fruit-isolated-600nw-2296025373.jpg"},
+            "jackfruit":{price:80, unit:"per kg",image:"https://media.istockphoto.com/id/1411962468/photo/young-jackfruit-on-white-background.jpg?s=612x612&w=0&k=20&c=wo384rXnbm6x4qrVskdYEZxdzXpd-g3jEeXWWDr8MPI="}
+        };
+
+        let products = [];
+        let orders = [];
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            document.querySelector(`button[onclick="switchTab('${tabName}')"]`).classList.add('active');
+        }
+
+        function autoFillProduct() {
+            const productName = document.getElementById("productName").value.trim();
+            if (fruitData[productName.toLowerCase()]) {
+                const data = fruitData[productName.toLowerCase()];
+                document.getElementById("productPrice").value = data.price;
+                document.getElementById("priceUnit").value = data.unit;
+                document.getElementById("productImage").value = data.image;
+                document.getElementById("productDescription").value = `Fresh and delicious ${productName}`;
+            }
+        }
+
+        document.getElementById("productForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const name = document.getElementById("productName").value.trim();
+            const price = parseFloat(document.getElementById("productPrice").value);
+            const unit = document.getElementById("priceUnit").value;
+            const stock = parseInt(document.getElementById("productStock").value);
+            const description = document.getElementById("productDescription").value.trim();
+            const imageURL = document.getElementById("productImage").value || "https://via.placeholder.com/120";
+
+            try {
+                const response = await fetch('/api/fruits', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, price, unit, stock, description, imageURL })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert("✅ Product saved successfully!");
+                    document.getElementById("productForm").reset();
+                    await fetchFruits();
+                } else {
+                    alert(`❌ Error: ${result.message}`);
+                }
+            } catch (err) {
+                console.error("Save product error:", err);
+                alert("❌ Connection to server failed.");
+            }
+        });
+
+        async function fetchFruits() {
+            try {
+                const response = await fetch('/api/fruits');
+                products = await response.json();
+                displayProducts();
+            } catch (err) {
+                console.error("Error fetching fruits:", err);
+            }
+        }
+
+        function displayProducts() {
+            const productList = document.getElementById("productList");
+            productList.innerHTML = "";
+
+            products.forEach((product, index) => {
+                const image = product.imageURL || "https://via.placeholder.com/120";
+                const productHTML = `
+                    <div class="col-md-4">
+                        <div class="fruit-card">
+                            <img src="${image}" alt="${product.name}">
+                            <h4>${product.name}</h4>
+                            <p>${product.description || ''}</p>
+                            <p><strong>Price:</strong> ₹${product.price} <small>${product.unit}</small></p>
+                            <p><strong>Stock:</strong> ${product.stock}</p>
+                            <div class="d-flex justify-content-around">
+                                <button class="btn btn-danger" onclick="deleteProduct('${product.name}')">Delete</button>
+                                <button class="btn btn-custom" onclick="openOrderModal(${index})">Place Order</button>
+                            </div>
+                        </div>
+                    </div>`;
+                productList.innerHTML += productHTML;
+            });
+        }
+
+        async function deleteProduct(name) {
+            if (confirm(`Are you sure you want to delete product "${name}"?`)) {
+                try {
+                    const response = await fetch(`/api/fruits/${encodeURIComponent(name)}`, {
+                        method: 'DELETE'
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        alert("✅ Product deleted successfully!");
+                        await fetchFruits();
+                    } else {
+                        alert(`❌ Error deleting product: ${result.message}`);
+                    }
+                } catch (err) {
+                    console.error("Delete fruit error:", err);
+                }
+            }
+        }
+
+        function openOrderModal(index) {
+            const product = products[index];
+            document.getElementById("selectedProductIndex").value = index;
+            document.getElementById("customerName").value = "";
+            document.getElementById("orderQuantity").value = 1;
+            const modal = new bootstrap.Modal(document.getElementById('orderModal'));
+            modal.show();
+        }
+
+        document.getElementById("orderForm").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            const index = document.getElementById("selectedProductIndex").value;
+            const customerName = document.getElementById("customerName").value.trim();
+            const quantity = parseFloat(document.getElementById("orderQuantity").value);
+            const product = products[index];
+
+            if (!customerName) {
+                alert("Please enter customer name");
+                return;
+            }
+
+            try {
+                // Add to cart for customer
+                let response = await fetch('/api/cart/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: customerName,
+                        name: product.name,
+                        price: product.price,
+                        quantity: quantity,
+                        unit: product.unit,
+                        img: product.imageURL
+                    })
+                });
+                let result = await response.json();
+                if (!result.success) {
+                    alert(`❌ Error placing order: ${result.message}`);
+                    return;
+                }
+
+                // Checkout
+                response = await fetch('/api/checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: customerName })
+                });
+                result = await response.json();
+                if (result.success) {
+                    alert(`Order placed successfully for ${customerName}! ✅\nOrder ID: ${result.orderID}`);
+                    const modalEl = document.getElementById('orderModal');
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    modal.hide();
+                    await fetchFruits();
+                    await fetchOrders();
+                } else {
+                    alert(`❌ Checkout failed: ${result.message}`);
+                }
+            } catch (err) {
+                console.error("Error creating order:", err);
+                alert("❌ Connection failed.");
+            }
+        });
+
+        async function fetchOrders() {
+            try {
+                const response = await fetch('/api/orders');
+                orders = await response.json();
+                displayOrders();
+            } catch (err) {
+                console.error("Error fetching orders:", err);
+            }
+        }
+
+        function displayOrders() {
+            const orderList = document.getElementById("orderList");
+            orderList.innerHTML = "";
+
+            orders.forEach((order) => {
+                let productNames = order.items.map(item => item.name).join(", ");
+                let totalQuantity = order.items.reduce((sum, item) => sum + item.quantity, 0);
+                const orderId = order.orderID || order.id;
+                
+                const orderHTML = `
+                    <tr>
+                        <td>${order.customerName || "Customer"}</td>
+                        <td>${productNames}</td>
+                        <td>${totalQuantity}</td>
+                        <td>₹${order.totalAmount.toFixed(2)}</td>
+                        <td>
+                            <select class="form-select form-select-sm" onchange="updateOrderStatus('${orderId}', this.value)">
+                                <option value="Pending" ${order.status === "Pending" ? "selected" : ""}>⏳ Pending</option>
+                                <option value="Packed" ${order.status === "Packed" ? "selected" : ""}>📦 Packed</option>
+                                <option value="Shipped" ${order.status === "Shipped" ? "selected" : ""}>🚚 Shipped</option>
+                                <option value="On the way" ${order.status === "On the way" ? "selected" : ""}>🚚 On the way</option>
+                                <option value="Delivered" ${order.status === "Delivered" ? "selected" : ""}>✅ Delivered</option>
+                                <option value="Cancelled" ${order.status === "Cancelled" ? "selected" : ""}>❌ Cancelled</option>
+                            </select>
+                        </td>
+                        <td>
+                            <button class="btn btn-danger btn-sm" onclick="deleteOrder('${orderId}')">❌ Cancel</button>
+                        </td>
+                    </tr>`;
+                
+                orderList.innerHTML += orderHTML;
+            });
+        }
+
+        async function updateOrderStatus(orderId, newStatus) {
+            try {
+                const response = await fetch('/api/orders/status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ orderID: orderId, status: newStatus })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert(`✅ Order status updated to ${newStatus}`);
+                    await fetchOrders();
+                } else {
+                    alert(`❌ Failed to update status: ${result.message}`);
+                }
+            } catch (err) {
+                console.error("Error updating order status:", err);
+            }
+        }
+
+        async function deleteOrder(orderId) {
+            if (confirm("Are you sure you want to cancel this order?")) {
+                try {
+                    const response = await fetch('/api/orders/cancel', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ orderID: orderId })
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        alert("✅ Order cancelled successfully!");
+                        await fetchOrders();
+                    } else {
+                        alert(`❌ Failed to cancel order: ${result.message}`);
+                    }
+                } catch (err) {
+                    console.error("Cancel order error:", err);
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const adminLoggedIn = localStorage.getItem('adminLoggedIn');
+            if (adminLoggedIn !== 'true') {
+                alert("🔒 Access Denied! Please login as Admin.");
+                window.location.href = 'login.html';
+                return;
+            }
+            await fetchFruits();
+            await fetchOrders();
+        });
+
+
+    </script>
+
+</body>
+
+</html>

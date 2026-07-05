@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Dashboard</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: url('https://i2.wp.com/www.onegreenplanet.org/wp-content/uploads/2018/01/vegan-grocery.jpg?resize=1600%2C1000') no-repeat center center fixed;
+            background-size: cover; 
+            margin: 0;
+            padding: 0;
+        }
+
+        .dashboard {
+            max-width: 500px;
+            margin: 5% auto;
+            background: rgba(255, 255, 255, 0.8);  
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .avatar {
+            width: 100px;
+            height: 100px;
+            background: #D7263D;
+            color: white;
+            font-size: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            background: #D7263D;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #E76F51;
+        }
+
+        .logout {
+            margin-top: 1rem;
+            display: block;
+            color: #555;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        
+        .saved-address {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="avatar" id="user-avatar">👤</div>
+        <h2 id="username-display">Welcome, User!</h2>
+
+        <form id="address-form">
+            <label for="address">Update Your Address:</label>
+            <textarea id="address" rows="4" placeholder="Enter your delivery address..."></textarea>
+            <button type="submit">Save Address</button>
+        </form>
+        
+        <div class="saved-address" id="saved-address-display">
+            <h3>Your Saved Address:</h3>
+            <p id="current-address">No address saved yet.</p>
+        </div>
+
+        <p class="logout" onclick="logout()">🔓 Logout</p>
+    </div>
+
+    <script>
+        // Check if user is logged in
+        const user = JSON.parse(localStorage.getItem('loggedInUser'));
+
+        if (!user) {
+            window.location.href = 'login.html';  // Redirect to login if no user is logged in
+        } else {
+            // Display username and avatar
+            document.getElementById('username-display').textContent = `Welcome, ${user.username}!`;
+            document.getElementById('user-avatar').textContent = user.username[0].toUpperCase();
+            
+            // Load and display saved address from server
+            loadSavedAddress();
+        }
+        
+        // Function to load the saved address from the server
+        async function loadSavedAddress() {
+            try {
+                const response = await fetch(`/api/user/address?username=${encodeURIComponent(user.username)}`);
+                const result = await response.json();
+                if (result.success) {
+                    const addressVal = result.address || "";
+                    document.getElementById('current-address').textContent = addressVal || "No address saved yet.";
+                    document.getElementById('address').value = addressVal;
+                } else {
+                    console.error("Failed to load address:", result.message);
+                }
+            } catch (err) {
+                console.error("Error loading address:", err);
+            }
+        }
+
+        // Address Update Form Submission
+        document.getElementById('address-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const newAddress = document.getElementById('address').value.trim();
+            
+            if (newAddress === '') {
+                alert('Please enter an address before saving.');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/user/address', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: user.username,
+                        address: newAddress
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('current-address').textContent = newAddress;
+                    alert('✅ Address updated successfully!');
+                } else {
+                    alert(`❌ Failed to update address: ${result.message}`);
+                }
+            } catch (err) {
+                console.error("Error saving address:", err);
+                alert("❌ Connection to server failed.");
+            }
+        });
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('loggedInUser');
+            localStorage.removeItem('adminLoggedIn');
+            window.location.href = 'login.html';  // Redirect to login page
+        }
+    </script>
+</body>
+</html>

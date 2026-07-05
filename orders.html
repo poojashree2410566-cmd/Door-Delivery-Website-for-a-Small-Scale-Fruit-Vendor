@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders - Suyambu Lingam Pazhamudhir Cholai</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to right, #FFDEE9, #B5FFFC);
+            color: #333;
+        }
+
+        .nav-bar {
+            background: #8B5E3B;
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-bar h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+
+        .nav-links button {
+            background: #D7263D;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            border-radius: 8px;
+        }
+
+        .nav-links button:hover {
+            background: #E76F51;
+            transform: scale(1.1);
+        }
+
+        .container {
+            margin-top: 20px;
+        }
+
+        .orders-title {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .order-card {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .order-status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .status-pending {
+            background-color: #FFC107;
+            color: #000;
+        }
+
+        .status-packed {
+            background-color: #17A2B8;
+            color: white;
+        }
+
+        .status-shipped, .status-on-the-way {
+            background-color: #17A2B8;
+            color: white;
+        }
+
+        .status-delivered {
+            background-color: #28A745;
+            color: white;
+        }
+
+        .status-cancelled {
+            background-color: #DC3545;
+            color: white;
+        }
+
+        .order-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .order-item img {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            margin-right: 15px;
+        }
+
+        .order-item-details {
+            flex-grow: 1;
+        }
+
+        .order-total {
+            text-align: right;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        .no-orders {
+            text-align: center;
+            margin-top: 50px;
+            font-size: 1.5rem;
+            color: #555;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .order-date {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .cancel-button {
+            background: #DC3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.3s, transform 0.3s;
+            float: right;
+        }
+
+        .cancel-button:hover {
+            background: #BB2D3B;
+            transform: scale(1.05);
+        }
+
+        .cancel-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .order-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 15px;
+        }
+        
+        .status-details {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .status-timeline {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            width: 100%;
+            position: relative;
+        }
+        
+        .status-timeline::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background-color: #ddd;
+            z-index: 1;
+        }
+        
+        .status-step {
+            z-index: 2;
+            text-align: center;
+            width: 20%;
+        }
+        
+        .status-dot {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #ddd;
+            margin: 0 auto 8px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .status-dot.active {
+            background-color: #28A745;
+            color: white;
+        }
+        
+        .status-dot.cancelled {
+            background-color: #DC3545;
+            color: white;
+        }
+        
+        .status-label {
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg nav-bar">
+        <div class="container-fluid">
+            <h1 class="navbar-brand text-white">Suyambu Lingam Pazhamudhir Cholai</h1>
+            <div class="nav-links">
+                <a href="index.html"><button>Home</button></a>
+                <a href="login.html"><button>Login</button></a>
+                <a href="cart.html"><button>Cart</button></a>
+                <a href="orders.html"><button>My Orders</button></a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2 class="orders-title mt-4">📦 My Orders</h2>
+        <div id="orders-container"></div>
+    </div>
+
+    <footer class="text-center py-3 bg-dark text-white mt-5">
+        <p>&copy; Suyambu Lingam Pazhamudhir Cholai. All rights reserved.</p>
+    </footer>
+
+    <script>
+        let orders = [];
+        const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+
+        async function fetchOrders() {
+            if (!loggedInUser) {
+                alert("🔒 Please login first to view your orders!");
+                window.location.href = "login.html";
+                return;
+            }
+            try {
+                const response = await fetch(`/api/orders?username=${encodeURIComponent(loggedInUser.username)}`);
+                orders = await response.json();
+                displayOrders();
+            } catch (err) {
+                console.error("Error fetching orders:", err);
+            }
+        }
+
+        function displayOrders() {
+            const ordersContainer = document.getElementById('orders-container');
+            
+            if (orders.length === 0) {
+                ordersContainer.innerHTML = '<div class="no-orders">You have no orders yet! 🛒</div>';
+                return;
+            }
+            
+            let ordersHTML = '';
+            
+            orders.forEach((order) => {
+                const orderId = order.orderID || order.id;
+                // Format date
+                const orderDate = new Date(order.date || Date.now());
+                const formattedDate = orderDate.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                // Determine status class
+                let statusClass = '';
+                switch(order.status) {
+                    case 'Pending':
+                        statusClass = 'status-pending';
+                        break;
+                    case 'Packed':
+                        statusClass = 'status-packed';
+                        break;
+                    case 'Shipped':
+                    case 'On the way':
+                        statusClass = 'status-shipped';
+                        break;
+                    case 'Delivered':
+                        statusClass = 'status-delivered';
+                        break;
+                    case 'Cancelled':
+                        statusClass = 'status-cancelled';
+                        break;
+                    default:
+                        statusClass = 'status-pending';
+                }
+                
+                // Start order card
+                ordersHTML += `
+                    <div class="order-card" id="order-${orderId}">
+                        <div class="order-header">
+                            <div>
+                                <h3>Order ID: ${orderId}</h3>
+                                <p class="order-date">${formattedDate}</p>
+                            </div>
+                            <div class="order-status ${statusClass}" id="status-${orderId}">${order.status}</div>
+                        </div>
+                `;
+                
+                // Add items
+                order.items.forEach(item => {
+                    const itemTotal = item.quantity * item.price;
+                    const image = item.img || "https://via.placeholder.com/50";
+                    ordersHTML += `
+                        <div class="order-item">
+                            <img src="${image}" alt="${item.name}">
+                            <div class="order-item-details">
+                                <p><strong>${item.name}</strong></p>
+                                <p>Quantity: ${item.quantity} ${item.unit || 'unit'}</p>
+                            </div>
+                            <div>
+                                <p>Rs. ${itemTotal.toFixed(2)}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                // Add status timeline
+                const statuses = ['Pending', 'Packed', 'On the way', 'Delivered'];
+                
+                if (order.status !== 'Cancelled') {
+                    ordersHTML += `
+                        <div class="status-details mt-4">
+                            <h5>Order Status</h5>
+                            <div class="status-timeline">
+                    `;
+                    
+                    const currentStatusIndex = statuses.indexOf(order.status);
+                    
+                    statuses.forEach((status, statusIndex) => {
+                        const isActive = statusIndex <= currentStatusIndex;
+                        ordersHTML += `
+                            <div class="status-step">
+                                <div class="status-dot ${isActive ? 'active' : ''}">
+                                    ${isActive ? '✓' : ''}
+                                </div>
+                                <div class="status-label">${status}</div>
+                            </div>
+                        `;
+                    });
+                    
+                    ordersHTML += `
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Special cancelled status display
+                    ordersHTML += `
+                        <div class="status-details mt-4">
+                            <h5>Order Status</h5>
+                            <div class="text-center">
+                                <div class="status-dot cancelled" style="margin:auto">❌</div>
+                                <div class="status-label">Cancelled</div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Add total and cancel button
+                ordersHTML += `
+                        <div class="order-total">
+                            Total Amount: Rs. ${order.totalAmount.toFixed(2)}
+                        </div>
+                        <div class="order-actions">
+                            <button class="cancel-button" 
+                                    id="cancel-${orderId}"
+                                    onclick="cancelOrder('${orderId}')" 
+                                    ${order.status === 'Delivered' || order.status === 'Cancelled' ? 'disabled' : ''}>
+                                ${order.status === 'Cancelled' ? 'Cancelled' : '❌ Cancel Order'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            ordersContainer.innerHTML = ordersHTML;
+        }
+        
+        async function cancelOrder(orderId) {
+            if (confirm("Are you sure you want to cancel this order?")) {
+                try {
+                    const response = await fetch('/api/orders/cancel', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ orderID: orderId })
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        alert("Order cancelled successfully! ✅");
+                        await fetchOrders();
+                    } else {
+                        alert(`❌ Failed to cancel order: ${result.message}`);
+                    }
+                } catch (err) {
+                    console.error("Cancel order error:", err);
+                    alert("❌ Connection to server failed.");
+                }
+            }
+        }
+        
+        // Check for order updates every 5 seconds
+        setInterval(fetchOrders, 5000);
+        
+        document.addEventListener('DOMContentLoaded', fetchOrders);
+    </script>
+</body>
+</html>
